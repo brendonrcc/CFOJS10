@@ -1,0 +1,1949 @@
+    const { useState, useEffect, useMemo, useCallback, useRef } = React;
+      const { createRoot } = ReactDOM;
+      
+      const kebabToPascal = (str) => 
+        str.replace(/-([a-z0-9])/g, (g) => g[1].toUpperCase())
+           .replace(/^[a-z]/, (g) => g.toUpperCase());
+
+      const Icon = ({ name, size = 24, className = "", ...props }) => {
+        const ref = useRef(null);
+
+        useEffect(() => {
+          if (!ref.current || !window.lucide) return;
+          const pascalName = kebabToPascal(name);
+          const iconDef = window.lucide.icons ? window.lucide.icons[pascalName] : null;
+          if (iconDef) {
+            const svg = window.lucide.createElement(iconDef);
+            svg.setAttribute('width', size);
+            svg.setAttribute('height', size);
+            ref.current.innerHTML = '';
+            ref.current.appendChild(svg);
+          }
+        }, [name, size]);
+
+        return <span ref={ref} className={className} style={{ display: 'inline-flex', verticalAlign: 'middle', lineHeight: 0 }} {...props}></span>;
+      };
+
+      const CustomCourseIcon = ({ size = 24, className = "" }) => (
+        <img src="https://i.imgur.com/N03iLnL.png" alt="Aulas e Scripts" style={{ width: size, height: size, objectFit: 'contain' }} className={className} />
+      );
+
+      const CustomProfessorIcon = ({ size = 24, className = "" }) => (
+        <img src="https://i.imgur.com/85pC8ek.png" alt="Manual do Professor" style={{ width: size, height: size, objectFit: 'contain' }} className={className} />
+      );
+
+      // Icon definitions
+      const Menu = (p) => <Icon name="menu" {...p} />;
+      const Moon = (p) => <Icon name="moon" {...p} />;
+      const Sun = (p) => <Icon name="sun" {...p} />;
+      const ChevronDown = (p) => <Icon name="chevron-down" {...p} />;
+      const ChevronUp = (p) => <Icon name="chevron-up" {...p} />;
+      const CheckCircle = (p) => <Icon name="check-circle" {...p} />;
+      const Copy = (p) => <Icon name="copy" {...p} />;
+      const Check = (p) => <Icon name="check" {...p} />;
+      const ChevronRight = (p) => <Icon name="chevron-right" {...p} />;
+      const X = (p) => <Icon name="x" {...p} />;
+      const Users = (p) => <Icon name="users" {...p} />;
+      const Lock = (p) => <Icon name="lock" {...p} />;
+      const Loader2 = (p) => <Icon name="loader-2" {...p} />;
+      const Info = (p) => <Icon name="info" {...p} />;
+      const AlertTriangle = (p) => <Icon name="alert-triangle" {...p} />;
+      const LayoutDashboard = (p) => <Icon name="layout-dashboard" {...p} />;
+      const CheckCircle2 = (p) => <Icon name="check-circle-2" {...p} />;
+      const XCircle = (p) => <Icon name="x-circle" {...p} />;
+      const Search = (p) => <Icon name="search" {...p} />;
+      const Filter = (p) => <Icon name="filter" {...p} />;
+      const ArrowUpDown = (p) => <Icon name="arrow-up-down" {...p} />;
+      const CalendarDays = (p) => <Icon name="calendar-days" {...p} />;
+      const Clock = (p) => <Icon name="clock" {...p} />;
+      const FileCheck = (p) => <Icon name="file-check" {...p} />;
+      const AlertCircle = (p) => <Icon name="alert-circle" {...p} />;
+      const Terminal = (p) => <Icon name="terminal" {...p} />;
+      const ClipboardList = (p) => <Icon name="clipboard-list" {...p} />;
+      const Eraser = (p) => <Icon name="eraser" {...p} />;
+      const Scan = (p) => <Icon name="scan" {...p} />;
+      const XSquare = (p) => <Icon name="x-square" {...p} />;
+      const Globe = (p) => <Icon name="globe" {...p} />;
+      const FileText = (p) => <Icon name="file-text" {...p} />;
+      const SendHorizontal = (p) => <Icon name="send-horizontal" {...p} />;
+      const Code = (p) => <Icon name="code" {...p} />;
+      const PenTool = (p) => <Icon name="pen-tool" {...p} />;
+      const Scale = (p) => <Icon name="scale" {...p} />;
+      const Book = (p) => <Icon name="book" {...p} />;
+      const Clock3 = (p) => <Icon name="clock-3" {...p} />;
+      const ArrowLeft = (p) => <Icon name="arrow-left" {...p} />;
+      const FileSignature = (p) => <Icon name="file-signature" {...p} />;
+      const ArrowRight = (p) => <Icon name="arrow-right" {...p} />;
+      const Bookmark = (p) => <Icon name="bookmark" {...p} />;
+      const Dice5 = (p) => <Icon name="dice-5" {...p} />;
+      const Link = (p) => <Icon name="link" {...p} />;
+
+      // --- CONSTANTS ---
+      const WORKER_URL = "https://api-professor-dashboard.brendonhbrcc.workers.dev/";
+      const AUTH_GID = "1512246214";
+      const HISTORY_GID = "552818815";
+      const MANUAL_PROF_GID = "2125629446";
+      const SLIDESHOW_GID = "661060277";
+      const NOTICES_GID = "1523373356";
+      const LOGO_URL = "https://i.imgur.com/ScdmxL5.png";
+
+      const CLASSES = [
+        { id: 'admin', name: 'Administração e Tecnologia do Fórum', gid: '0', description: 'Gestão administrativa e protocolos.', icon: 'https://i.imgur.com/x8lj35t.png' },
+        { id: 'mil_sci', name: 'Ciências Militares', gid: '971998757', description: 'Táticas, estratégias e estudos de campo.', icon: 'https://i.imgur.com/oO2aF2k.png' },
+        { id: 'mil_career', name: 'Carreira Militar', gid: '303472444', description: 'Guia de progressão e hierarquia.', icon: 'https://i.imgur.com/Na76QYn.png' },
+        { id: 'practice', name: 'Práticas Militares e Legislação', gid: '1700831677', description: 'Treinamentos práticos e simulações.', icon: 'https://i.imgur.com/lR1RzIE.png' },
+      ];
+
+      const CLASS_TYPES_FEEDBACK = [
+        { id: 'admin', name: 'Administração e Tecnologia do Fórum', maxScore: 6 },
+        { id: 'mil_sci', name: 'Ciências Militares', maxScore: 5 },
+        { id: 'mil_career', name: 'Carreira Militar', maxScore: 5 },
+        { id: 'practice', name: 'Práticas Militares e Legislação', maxScore: 4 },
+      ];
+
+      // --- SERVICES ---
+      const parseCSVLine = (text) => {
+        const result = [];
+        let start = 0;
+        let inQuotes = false;
+        const delimiter = '\t';
+        for (let i = 0; i < text.length; i++) {
+          if (text[i] === '"') inQuotes = !inQuotes;
+          else if (text[i] === delimiter && !inQuotes) {
+            let field = text.substring(start, i);
+            if (field.startsWith('"') && field.endsWith('"')) field = field.substring(1, field.length - 1).replace(/""/g, '"');
+            result.push(field.trim());
+            start = i + 1;
+          }
+        }
+        let lastField = text.substring(start);
+        if (lastField.startsWith('"') && lastField.endsWith('"')) lastField = lastField.substring(1, lastField.length - 1).replace(/""/g, '"');
+        result.push(lastField.trim());
+        return result;
+      };
+
+      const fetchCSV = async (gid) => {
+        if (!gid) throw new Error('GID ausente para requisição.');
+        const url = `${WORKER_URL}?gid=${gid}&format=tsv`;
+        try {
+          const response = await fetch(url, { method: 'GET', cache: 'no-store' });
+          if (!response.ok) throw new Error(`Falha HTTP ${response.status}`);
+          const text = await response.text();
+          if (!text || text.trim() === '') return [];
+          return text.split(/\r?\n/).map(parseCSVLine);
+        } catch (error) {
+          console.error("Fetch Error Detail:", error);
+          throw new Error('Erro ao buscar dados do Worker');
+        }
+      };
+
+      const loginUser = async (nickname) => {
+        try {
+          const rows = await fetchCSV(AUTH_GID);
+          const normalizedNick = nickname.toLowerCase().trim();
+          for (const row of rows) {
+            if (row.length < 2) continue;
+            const role = row[0];
+            const name = row[1];
+            if (name && name.toLowerCase().trim() === normalizedNick) return { nickname: name, role: role };
+          }
+          return null;
+        } catch (error) {
+          console.error("Login Error:", error);
+          throw error;
+        }
+      };
+
+      const fetchClassContent = async (gid) => {
+        try {
+          const rows = await fetchCSV(gid);
+          return rows.map(row => ({ tag: row[0]?.toLowerCase().trim() || '', content: row[1] || '' })).filter(r => r.tag !== '');
+        } catch (error) {
+          console.error("Content Fetch Error:", error);
+          throw error;
+        }
+      };
+
+      const fetchClassHistory = async () => {
+        try {
+          const rows = await fetchCSV(HISTORY_GID);
+          if (!rows || rows.length < 2) return [];
+          return rows.slice(1).map(row => ({
+            endTime: row[0] || '', startTime: row[1] || '', className: row[2] || '', professor: row[3] || '',
+            students: row[4] || '', verdict: row[5] || '', score: row[7] || '', adminActivity: row[8] || ''
+          })).filter(entry => entry.className !== ''); 
+        } catch (error) {
+          console.error("History Fetch Error:", error);
+          return [];
+        }
+      };
+
+      const sendPrivateMessage = async (username, subject, message) => {
+        try {
+            // 1. Acessa a página de composição para pegar o formulário e tokens necessários
+            const composeResp = await fetch('/privmsg?mode=post', {
+                credentials: 'same-origin',
+                headers: { 'Cache-Control': 'no-store, no-cache' }
+            });
+            if (!composeResp.ok) return false;
+
+            const html = await composeResp.text();
+            const dom = new DOMParser().parseFromString(html, 'text/html');
+            // Procura o formulário que contém o campo de mensagem
+            const form = dom.querySelector('form textarea[name="message"]')?.closest('form');
+            if (!form) return false;
+
+            // 2. Prepara os dados do formulário
+            const formData = new FormData();
+            let hasUsernameArrayField = false;
+
+            // Copia os campos ocultos e tokens do formulário original
+            form.querySelectorAll('input, textarea, select').forEach(el => {
+                const name = el.getAttribute('name');
+                if (!name || name === 'message' || name === 'subject') return;
+                if (name === 'username[]') hasUsernameArrayField = true;
+                if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
+                formData.append(name, el.value || '');
+            });
+
+            // Define destinatário, assunto e mensagem
+            if (hasUsernameArrayField) formData.set('username[]', username);
+            else formData.set('username', username);
+
+            formData.set('subject', subject);
+            formData.set('message', message);
+            
+            // Garante que o campo de envio (submit) esteja presente
+            if (!formData.has('post')) formData.set('post', '1');
+
+            // 3. Realiza o envio
+            const action = form.getAttribute('action') || '/privmsg';
+            const sendResp = await fetch(action, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            if (!sendResp.ok) return false;
+            
+            // 4. Verifica se houve erro na resposta (usuário inexistente ou flood)
+            const textLower = (await sendResp.text()).toLowerCase();
+            if (textLower.includes('não existe') || textLower.includes('flood')) return false;
+
+            console.log(`MP enviada para: ${username}`);
+            return true;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+      };
+
+      // --- LOGIC HELPERS ---
+      const generateId = () => Math.random().toString(36).substr(2, 9);
+      const parseRowsToBlocks = (rows) => {
+        let i = 0;
+        const parseLevel = (untilTags = [], parentId = undefined) => {
+          const currentBlocks = [];
+          while (i < rows.length) {
+            const row = rows[i];
+            const tag = row.tag.toLowerCase();
+            if (untilTags.includes(tag)) return currentBlocks;
+            const currentId = generateId();
+            if (tag === 's1') {
+              i++; const children = parseLevel(['s2'], currentId);
+              currentBlocks.push({ id: currentId, parentId: parentId, type: 'group', tag: 's1', content: row.content, children, level: 1 });
+              i++; 
+            } else if (tag === 's3') {
+              i++; const children = parseLevel(['s4'], currentId);
+              currentBlocks.push({ id: currentId, parentId: parentId, type: 'group', tag: 's3', content: row.content, children, level: 2 });
+              i++; 
+            } else if (tag === 's2' || tag === 's4') return currentBlocks;
+            else { currentBlocks.push({ id: currentId, parentId: parentId, type: 'leaf', tag: tag, content: row.content }); i++; }
+          }
+          return currentBlocks;
+        };
+        return parseLevel();
+      };
+      const getRoleLevel = (role) => {
+        // Simplified role check since we only care about basic access now
+        return 1;
+      };
+      const parseDateHelper = (dateStr) => {
+        try {
+          const [datePart, timePart] = dateStr.split(' ');
+          if (!datePart) return null;
+          const [day, month, year] = datePart.split('/');
+          const [hour, minute, second] = timePart ? timePart.split(':') : ['00', '00', '00'];
+          return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second || 0));
+        } catch (e) { return null; }
+      };
+
+      // --- RICH TEXT RENDERER ---
+      const RichText = ({ text, className }) => {
+        if (!text) return null;
+
+        const parts = text.split(/(<\/?(?:b|i|u|a(?: [^>]+)?|color(?:=[^>]+)?|br)\s*\/?>)/gi);
+        let currentStyle = { fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none', color: 'inherit' };
+        const colorStack = [];
+        let currentLink = null;
+
+        return (
+            <span className={className}>
+                {parts.map((part, i) => {
+                    if (!part) return null;
+                    const lowerPart = part.toLowerCase();
+                    if (lowerPart.match(/^<b\s*\/?>$/)) { currentStyle.fontWeight = 'bold'; return null; }
+                    if (lowerPart === '</b>') { currentStyle.fontWeight = 'normal'; return null; }
+                    if (lowerPart.match(/^<i\s*\/?>$/)) { currentStyle.fontStyle = 'italic'; return null; }
+                    if (lowerPart === '</i>') { currentStyle.fontStyle = 'normal'; return null; }
+                    if (lowerPart.match(/^<u\s*\/?>$/)) { currentStyle.textDecoration = 'underline'; return null; }
+                    if (lowerPart === '</u>') { currentStyle.textDecoration = 'none'; return null; }
+                    const colorMatch = part.match(/^<color=([^>]+)>$/i);
+                    if (colorMatch) { colorStack.push(currentStyle.color); currentStyle.color = colorMatch[1]; return null; }
+                    if (lowerPart === '</color>') { currentStyle.color = colorStack.pop() || 'inherit'; return null; }
+                    const linkMatch = part.match(/^<a\s+href=["']?([^"'>]+)["']?\s*\/?>$/i);
+                    if (linkMatch) { currentLink = linkMatch[1]; return null; }
+                    if (lowerPart === '</a>') { currentLink = null; return null; }
+                    if (lowerPart.match(/^<br\s*\/?>$/)) { return <br key={i} />; }
+                    if (currentLink) { return <a key={i} href={currentLink} style={{ ...currentStyle, textDecoration: 'underline' }} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:text-brand hover:opacity-80 transition-colors" onClick={(e) => e.stopPropagation()}>{part}</a>; }
+                    return <span key={i} style={{ ...currentStyle }}>{part}</span>;
+                })}
+            </span>
+        );
+      };
+
+      // --- COMPONENTS ---
+      const BrandHeader = () => (
+        <div className="flex items-center gap-4 select-none">
+            <div className="relative"><img src={LOGO_URL} alt="CFO" className="h-12 w-auto drop-shadow-lg" /></div>
+            <div className="hidden md:flex flex-col leading-none">
+                <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-condensed font-bold text-slate-900 dark:text-white italic tracking-tighter">CENTRO</span>
+                    <span className="text-sm font-serif italic text-brand">de</span>
+                    <span className="text-2xl font-condensed font-bold text-slate-900 dark:text-white italic tracking-tighter">FORMAÇÃO</span>
+                </div>
+                <div className="flex items-baseline gap-1.5 -mt-1">
+                    <span className="text-sm font-serif italic text-brand">de</span>
+                    <span className="text-xl font-display uppercase text-slate-900 dark:text-white tracking-widest">OFICIAIS</span>
+                </div>
+            </div>
+        </div>
+      );
+      
+      const Slideshow = () => {
+        const [current, setCurrent] = useState(0);
+        const [slidesData, setSlidesData] = useState([]);
+        const [loading, setLoading] = useState(true);
+
+        useEffect(() => {
+            const fetchSlides = async () => {
+                try {
+                    const rows = await fetchCSV(SLIDESHOW_GID);
+                    // Assume all non-empty rows in Col A are images.
+                    const images = rows.map(r => r[0]).filter(url => url && url.startsWith('http'));
+                    setSlidesData(images);
+                } catch (e) {
+                    console.error("Failed to load slides", e);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchSlides();
+        }, []);
+
+        useEffect(() => {
+            if (slidesData.length === 0) return;
+            const timer = setInterval(() => setCurrent(c => (c + 1) % slidesData.length), 6000);
+            return () => clearInterval(timer);
+        }, [slidesData.length]);
+
+        if (loading || slidesData.length === 0) {
+             return (
+                <div className="w-full h-[300px] md:h-[380px] bg-[#0a0f0b] rounded-sm relative overflow-hidden group shadow-2xl border-y border-brand/20 mb-10 flex items-center justify-center">
+                    <Loader2 className="animate-spin text-brand" size={32} />
+                </div>
+             );
+        }
+
+        return (
+            <div className="w-full h-[300px] md:h-[380px] bg-[#0a0f0b] rounded-sm relative overflow-hidden group shadow-2xl border-y border-brand/20 mb-10">
+                {slidesData.map((url, i) => (
+                    <div key={i} className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${i === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+                        <div className="relative w-full h-full bg-[#0a0f0b] flex items-center justify-center overflow-hidden">
+                             <img src={url} className="w-full h-full object-cover opacity-80" />
+                             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f0b] via-transparent to-transparent opacity-60"></div>
+                        </div>
+                    </div>
+                ))}
+                
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                    {slidesData.map((_, i) => (
+                        <button key={i} onClick={() => setCurrent(i)} className={`h-1.5 transition-all duration-300 rounded-full ${i === current ? 'w-8 bg-brand' : 'w-2 bg-white/20 hover:bg-white/40'}`} />
+                    ))}
+                </div>
+                
+                <button onClick={() => setCurrent(c => (c - 1 + slidesData.length) % slidesData.length)} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 text-white/20 hover:text-white hover:bg-black/30 rounded-full transition-all opacity-0 group-hover:opacity-100"><ArrowLeft size={24} /></button>
+                <button onClick={() => setCurrent(c => (c + 1) % slidesData.length)} className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 text-white/20 hover:text-white hover:bg-black/30 rounded-full transition-all opacity-0 group-hover:opacity-100"><ArrowRight size={24} /></button>
+            </div>
+        );
+      };
+
+      const NoticeBoard = () => {
+          const [data, setData] = useState({ title: 'Carregando...', message: '...' });
+          
+          useEffect(() => {
+              const load = async () => {
+                  try {
+                      const rows = await fetchCSV(NOTICES_GID);
+                      // A2 is row index 1, col 0. B2 is row index 1, col 1.
+                      if (rows.length >= 2) {
+                          setData({ title: rows[1][0] || 'Aviso', message: rows[1][1] || '' });
+                      } else {
+                          setData({ title: 'Sem avisos', message: '' });
+                      }
+                  } catch (e) {
+                      setData({ title: 'Erro de conexão', message: 'Não foi possível carregar os avisos.' });
+                  }
+              };
+              load();
+          }, []);
+
+          return (
+            <div className="bg-[#1c261e] p-8 text-white flex flex-col justify-end relative overflow-hidden shadow-tactical border border-brand/20 rounded-sm h-full min-h-[250px]">
+                <div className="absolute top-0 right-0 p-6 opacity-10"><img src={LOGO_URL} className="h-40 w-auto grayscale" /></div>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-4 text-brand-accent">
+                        <AlertCircle size={18} />
+                        <span className="text-xs font-bold uppercase tracking-widest">Quadro de Avisos</span>
+                    </div>
+                    <h3 className="text-xl font-condensed font-bold uppercase tracking-wide text-white mb-2">{data.title}</h3>
+                    <p className="text-xs font-medium opacity-70 leading-relaxed whitespace-pre-wrap">{data.message}</p>
+                </div>
+            </div>
+          );
+      };
+
+      const Navbar = ({ user, onMenuClick, currentView, navigateTo, menuItems, theme, toggleTheme }) => {
+        const [activeDropdown, setActiveDropdown] = useState(null);
+        const userLevel = user ? getRoleLevel(user.role) : 0;
+        const dropdownRef = useRef(null);
+        const getHabboAvatar = (nickname) => `https://www.habbo.com.br/habbo-imaging/avatarimage?user=${nickname}&direction=3&head_direction=3&gesture=sml&size=m&headonly=1`;
+
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setActiveDropdown(null);
+          };
+          document.addEventListener('mousedown', handleClickOutside);
+          return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+
+        return (
+          <header className="h-24 bg-white dark:bg-dark-surface shadow-lg sticky top-0 z-[900] px-4 lg:px-8 flex items-center justify-between transition-colors duration-300 border-b-4 border-brand">
+            <div className="flex items-center gap-4 lg:gap-8">
+              <button onClick={onMenuClick} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-hover rounded transition-colors"><Menu size={28} /></button>
+              <BrandHeader />
+              {user && (
+                  <nav className="hidden lg:flex items-center gap-2 ml-6" ref={dropdownRef}>
+                    <button onClick={() => navigateTo('home')} className={`px-4 py-2 rounded-sm text-sm font-condensed uppercase font-bold tracking-wide transition-all ${currentView === 'home' ? 'bg-brand text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-hover'}`}>Início</button>
+                    {menuItems.map(item => (
+                        <button key={item.id} onClick={() => navigateTo(item.id)} className={`flex items-center gap-1.5 px-4 py-2 rounded-sm text-sm font-condensed uppercase font-bold tracking-wide transition-all ${currentView === item.id ? 'text-brand bg-brand/10' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-hover'}`}>
+                            {item.label}
+                        </button>
+                    ))}
+                  </nav>
+              )}
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button onClick={toggleTheme} className="hidden lg:flex items-center justify-center w-10 h-10 rounded bg-slate-100 dark:bg-dark-element text-slate-600 dark:text-slate-300 hover:bg-brand hover:text-white transition-colors" title="Alternar Tema">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
+              {user && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 pl-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <div className="text-right hidden xl:block">
+                        <p className="text-sm font-bold text-slate-800 dark:text-white leading-tight font-condensed uppercase">{user.nickname}</p>
+                        <p className="text-[10px] text-brand font-bold uppercase tracking-widest leading-tight mt-0.5">{user.role}</p>
+                    </div>
+                    <div className="w-10 h-10 bg-slate-100 dark:bg-dark-element rounded-full overflow-hidden flex items-center justify-center shadow-sm border border-slate-300 dark:border-slate-700">
+                      <img src={getHabboAvatar(user.nickname)} alt={user.nickname} className="scale-110" onError={(e) => { (e.target).style.display = 'none'; }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </header>
+        );
+      };
+
+      const CopyableText = ({ block, status, onInteract, attachedAnswer }) => {
+        const [copied, setCopied] = useState(false);
+        const isTitle = block.tag === 'title';
+        const isQuestion = block.tag === 'p';
+        
+        const handleInteraction = (e) => { 
+            e.stopPropagation(); 
+            navigator.clipboard.writeText(block.content || ''); 
+            setCopied(true); 
+            setTimeout(() => setCopied(false), 2000); 
+            onInteract(block.id); 
+        };
+
+        if (isTitle) {
+          return (
+            <div onClick={handleInteraction} className={`flex items-end justify-between py-3 mt-8 mb-4 gap-4 border-b-2 border-brand/20 select-none group cursor-pointer hover:bg-brand/5 rounded-sm px-2 transition-all duration-200`}>
+              <div className="flex items-center gap-3 w-full">
+                  <div className="h-8 w-1.5 bg-brand rounded-full"></div>
+                  <h3 className={`font-condensed font-bold text-3xl uppercase tracking-tighter leading-none ${status.isSkipped ? 'text-red-600' : 'text-slate-900 dark:text-white group-hover:text-brand'}`}><RichText text={block.content} /></h3>
+              </div>
+              <div className={`transition-opacity duration-200 ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>{copied ? <CheckCircle size={24} className="text-green-600" /> : <Copy size={20} className="text-brand/50" />}</div>
+            </div>
+          );
+        }
+        
+        if (isQuestion) {
+          return (
+            <div className="mb-6 group">
+                {/* Question Card */}
+                <div 
+                    onClick={handleInteraction} 
+                    className={`
+                        relative flex flex-col bg-white dark:bg-[#1a211d] 
+                        border-l-[6px] shadow-sm rounded-r-sm cursor-pointer transition-all duration-300
+                        ${status.isSkipped 
+                            ? 'border-l-red-500 border-y border-r border-red-200 dark:border-red-900/30' 
+                            : status.isClicked 
+                                ? 'border-l-brand/60 border-y border-r border-brand/10 opacity-70' 
+                                : 'border-l-slate-700 dark:border-l-slate-500 border-y border-r border-slate-200 dark:border-white/5 hover:border-l-brand hover:shadow-md hover:-translate-y-0.5'
+                        }
+                    `}
+                >
+                    <div className="p-5 flex gap-4 items-start">
+                        {/* Status Icon */}
+                        <div className="shrink-0 mt-1">
+                             {status.isClicked 
+                                ? <CheckCircle2 size={20} className="text-brand" /> 
+                                : status.isSkipped 
+                                    ? <AlertCircle size={20} className="text-red-500" />
+                                    : <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 group-hover:border-brand transition-colors"></div>
+                             }
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                            <span className={`text-[10px] font-bold uppercase tracking-widest font-condensed mb-1 block ${status.isClicked ? 'text-brand' : 'text-slate-400 group-hover:text-brand transition-colors'}`}>
+                                {status.isClicked ? 'Executado' : 'Script / Pergunta'}
+                            </span>
+                            <p className={`text-sm md:text-base font-medium leading-relaxed font-sans ${status.isClicked ? 'text-slate-500 line-through decoration-slate-400/50' : 'text-slate-800 dark:text-slate-100'}`}>
+                                <RichText text={block.content} />
+                            </p>
+                        </div>
+
+                        {/* Copy Action */}
+                        <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className={`p-2 rounded-sm transition-all ${copied ? 'text-green-600 bg-green-50' : 'text-slate-400 hover:text-brand hover:bg-slate-100 dark:hover:bg-white/5'}`}>
+                                {copied ? <Check size={18} /> : <Copy size={18} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Attached Answer (Rep) */}
+                {attachedAnswer && (
+                    <div className="ml-5 border-l-2 border-dashed border-slate-300 dark:border-white/10 pl-6 pt-3 pb-1">
+                        <div className={`p-4 rounded-sm bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 ${status.isSkipped ? 'opacity-50' : ''}`}>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[9px] font-bold text-brand uppercase tracking-widest font-condensed flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-brand rounded-full"></span>
+                                    Resposta Esperada
+                                </span>
+                                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic pl-3">
+                                    <RichText text={attachedAnswer.content} />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+          );
+        }
+
+        return (
+          <div className={`relative flex items-center justify-between py-2 mb-0.5 gap-4 group px-4 rounded-sm transition-all duration-200 cursor-pointer ${status.isClicked ? 'bg-brand/5 border-l-2 border-brand text-brand opacity-60' : status.isSkipped ? 'bg-red-50 border-l-2 border-red-400' : 'hover:bg-white dark:hover:bg-white/5 border-l-2 border-transparent hover:border-slate-300'}`} onClick={handleInteraction}>
+            <div className="w-full"><div className={`font-sans text-sm leading-relaxed whitespace-pre-wrap break-words font-medium ${status.isClicked ? 'line-through decoration-brand/50' : 'text-slate-700 dark:text-slate-300'}`}><RichText text={block.content} /></div></div>
+            <div className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity ${copied ? 'opacity-100' : ''}`}>{copied ? <span className="bg-brand text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm tracking-wider shadow-sm">Copiado</span> : <Copy size={12} className="text-slate-400" />}</div>
+          </div>
+        );
+      };
+
+      const PrivateMessage = ({ block, status, onInteract }) => {
+        const [isOpen, setIsOpen] = useState(false); 
+        const [nickname, setNickname] = useState(''); 
+        const [sendState, setSendState] = useState('idle');
+        const [sentRecipient, setSentRecipient] = useState(null);
+
+        const handleSend = async () => { 
+            if (!nickname.trim()) return; 
+            setSendState('sending'); 
+            
+            // Remove simple HTML tags that might be in the block content from the spreadsheet before sending
+            const rawMessage = block.content ? block.content.replace(/<[^>]*>?/gm, '') : '';
+            const subject = "Mensagem do Instrutor";
+
+            const success = await sendPrivateMessage(nickname, subject, rawMessage);
+
+            if (success) {
+                onInteract(block.id); 
+                setSentRecipient(nickname);
+                setSendState('sent'); 
+                setTimeout(() => { setIsOpen(false); setSendState('idle'); setNickname(''); }, 1500); 
+            } else {
+                setSendState('idle');
+                alert('Erro ao enviar MP. Verifique se o usuário existe, se você está logado no fórum ou aguarde o tempo de flood.');
+            }
+        };
+
+        if (status.isClicked) {
+            return (
+                <div className="my-4 animate-fade-in select-none">
+                    <div className="bg-blue-500/5 dark:bg-blue-500/10 p-3 border-l-4 border-blue-500 rounded-r-sm flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-condensed">MP Enviada</span><CheckCircle2 size={12} className="text-blue-500" /></div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 font-mono">Para: <span className="text-slate-900 dark:text-white font-bold">{sentRecipient}</span></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (!isOpen) { 
+            return (
+                <div className="my-6">
+                    <button onClick={() => setIsOpen(true)} className="w-full flex items-center justify-between p-4 bg-brand/5 hover:bg-brand/10 border border-brand/20 hover:border-brand/40 rounded-sm transition-all group">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center text-brand border border-brand/20 overflow-hidden"><img src="https://i.imgur.com/olTorAq.png" alt="" className="w-5 h-5 object-contain opacity-80" /></div>
+                            <div className="text-left"><span className="block text-xs font-bold uppercase tracking-widest text-brand font-condensed">Mensagem Privada</span><span className="text-[10px] text-slate-500 font-mono italic truncate max-w-[200px] block"><RichText text={block.content} /></span></div>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-brand flex items-center gap-1 transition-colors">Abrir <ChevronRight size={14} /></span>
+                    </button>
+                </div>
+            ); 
+        }
+        
+        return (
+            <div className="my-6 animate-fade-in bg-white dark:bg-[#0c120e] border border-brand/30 rounded-sm shadow-lg overflow-hidden relative">
+                <div className="bg-brand/10 px-4 py-2 flex items-center justify-between border-b border-brand/10">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand font-condensed flex items-center gap-2"><Lock size={10} /> Canal Seguro</span>
+                    <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={14} /></button>
+                </div>
+                <div className="p-4 flex gap-2">
+                      <div className="flex-1 relative">
+                          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><Users size={16} /></div>
+                          <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} placeholder="NICKNAME DO ALUNO" className="w-full bg-slate-100 dark:bg-dark-element pl-10 pr-4 py-3 text-sm font-bold uppercase text-slate-900 dark:text-white placeholder-slate-400 outline-none border border-slate-200 dark:border-slate-700 rounded-sm focus:border-brand focus:ring-1 focus:ring-brand font-condensed tracking-wide" autoFocus />
+                      </div>
+                      <button onClick={handleSend} disabled={!nickname.trim() || sendState !== 'idle'} className="px-6 bg-brand hover:bg-brand-hover text-white rounded-sm font-bold uppercase text-xs tracking-widest disabled:opacity-50 transition-all flex items-center justify-center min-w-[100px]">{sendState === 'sending' ? <Loader2 size={16} className="animate-spin" /> : sendState === 'sent' ? <Check size={16} /> : 'Enviar'}</button>
+                </div>
+            </div>
+        );
+      };
+
+      const Spoiler = ({ block, childrenNodes }) => {
+        const [isOpen, setIsOpen] = useState(false); const isOuter = block.level === 1; const title = block.content && block.content.trim() !== '' ? block.content : (isOuter ? 'Conteúdo Classificado' : 'Informação Adicional');
+        return (<div className={`my-4 border-l-2 ${isOuter ? 'border-brand pl-4' : 'border-slate-300 dark:border-slate-600 pl-4 ml-2'}`}><button onClick={() => setIsOpen(!isOpen)} className={`flex items-center gap-3 text-left transition-colors group ${isOpen ? 'text-brand' : 'text-slate-600 dark:text-slate-400 hover:text-brand'}`}><div className={`p-1 border rounded-sm transition-all ${isOpen ? 'border-brand bg-brand text-white' : 'border-slate-400 text-slate-400 group-hover:border-brand group-hover:text-brand'}`}>{isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</div><span className={`font-condensed font-bold uppercase tracking-wide ${isOuter ? 'text-sm' : 'text-xs'}`}><RichText text={title} /></span></button>{isOpen && <div className={`pt-4 animate-fade-in`}>{childrenNodes}</div>}</div>);
+      };
+
+      const ContentRenderer = ({ blocks, onSkipWarning }) => {
+        const processedBlocks = useMemo(() => {
+            const groupNodes = (nodes) => {
+                if (!nodes) return [];
+                const result = [];
+                let currentMexGroup = null;
+
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    
+                    if (node.tag === 'mex') {
+                        if (!currentMexGroup) {
+                            currentMexGroup = {
+                                id: `mex-group-${node.id}`,
+                                tag: 'mex-group',
+                                items: [node]
+                            };
+                            result.push(currentMexGroup);
+                        } else {
+                            currentMexGroup.items.push(node);
+                        }
+                        continue;
+                    } else {
+                        currentMexGroup = null;
+                    }
+
+                    if (node.tag === 'p') {
+                         const nextNode = (i + 1 < nodes.length) ? nodes[i+1] : null;
+                         if (nextNode && nextNode.tag === 'rep') {
+                             result.push({
+                                 id: `qa-group-${node.id}`,
+                                 tag: 'qa-group',
+                                 question: node,
+                                 answer: nextNode
+                             });
+                             i++; 
+                             continue;
+                         }
+                    }
+
+                    if (node.children) {
+                        result.push({ ...node, children: groupNodes(node.children) });
+                    } else {
+                        result.push(node);
+                    }
+                }
+                return result;
+            };
+            return groupNodes(blocks);
+        }, [blocks]);
+
+        const processBlocks = (blocks) => { const nodeMap = new Map(); const sequence = []; const traverse = (nodes) => { nodes.forEach(node => { nodeMap.set(node.id, node); if (node.type === 'leaf' && ['line', 'title', 'p'].includes(node.tag || '')) sequence.push(node.id); if (node.children) traverse(node.children); }); }; traverse(blocks); return { nodeMap, sequence }; };
+        const { nodeMap, sequence } = useMemo(() => processBlocks(blocks), [blocks]); 
+        const [clickedIds, setClickedIds] = useState(new Set());
+        const skippedIds = useMemo(() => { if (clickedIds.size === 0) return new Set(); const skipped = new Set(); let maxIndex = -1; sequence.forEach((id, idx) => { if (clickedIds.has(id)) maxIndex = idx; }); if (maxIndex === -1) return skipped; for (let i = 0; i < maxIndex; i++) { const candidateId = sequence[i]; if (!clickedIds.has(candidateId)) skipped.add(candidateId); } return skipped; }, [clickedIds, sequence]);
+        
+        const handleInteract = useCallback((id) => { 
+          const indexInSeq = sequence.indexOf(id);
+          if (indexInSeq !== -1) {
+              const firstUnclicked = sequence.findIndex(sid => !clickedIds.has(sid));
+              if (firstUnclicked !== -1 && indexInSeq > firstUnclicked) onSkipWarning();
+          }
+          setClickedIds(prev => { const n = new Set(prev); n.add(id); return n; }); 
+        }, [sequence, clickedIds, onSkipWarning]);
+        
+        const renderBlock = (block) => { 
+            const status = { isClicked: clickedIds.has(block.id), isSkipped: skippedIds.has(block.id) }; 
+            switch (block.tag) { 
+                case 'mt': 
+                    return (
+                        <div key={block.id} className="relative mt-16 mb-8 group">
+                            <div className="absolute -top-6 -left-6 text-[6rem] md:text-[8rem] font-display font-bold text-brand/5 dark:text-brand/10 select-none z-0 pointer-events-none group-hover:text-brand/10 transition-colors">#</div>
+                            <div className="relative z-10 pl-6 border-l-4 border-brand">
+                                <h2 className="text-3xl md:text-5xl font-condensed font-bold text-slate-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm">
+                                    <RichText text={block.content} />
+                                </h2>
+                            </div>
+                        </div>
+                    );
+                case 'mst': 
+                    return (
+                        <div key={block.id} className="mt-10 mb-6 flex items-center gap-4 group">
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center text-brand font-bold text-xs shadow-sm border border-slate-200 dark:border-white/10 group-hover:bg-brand group-hover:text-white transition-colors">
+                                <ChevronRight size={16} />
+                            </div>
+                            <h3 className="text-xl font-condensed font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide decoration-brand/30 decoration-2 underline-offset-4 group-hover:underline transition-all">
+                                <RichText text={block.content} />
+                            </h3>
+                        </div>
+                    );
+                case 'mtxt': 
+                    return (
+                        <div key={block.id} className="mb-4 pl-0 md:pl-12">
+                            <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium text-justify">
+                                <RichText text={block.content} />
+                            </p>
+                        </div>
+                    );
+                case 'minfo': 
+                    return (
+                        <div key={block.id} className="ml-0 md:ml-12 my-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-lg p-5 flex gap-4 shadow-sm hover:shadow-md transition-all">
+                            <div className="shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/30">
+                                <Info size={20} />
+                            </div>
+                            <div>
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-2">
+                                    Nota Didática
+                                </h4>
+                                <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    <RichText text={block.content} />
+                                </div>
+                            </div>
+                        </div>
+                    );
+                case 'malert': 
+                    return (
+                        <div key={block.id} className="ml-0 md:ml-12 my-6 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-red-500 rounded-r-lg p-5 flex gap-4 shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 -mt-2 -mr-2 text-red-500/5 group-hover:text-red-500/10 transition-colors pointer-events-none">
+                                <AlertTriangle size={80} />
+                            </div>
+                            <div className="shrink-0 text-red-500 pt-1 relative z-10">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div className="relative z-10">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 mb-1">
+                                    Ponto de Atenção
+                                </h4>
+                                <div className="text-sm font-bold text-red-900 dark:text-red-200 leading-relaxed">
+                                    <RichText text={block.content} />
+                                </div>
+                            </div>
+                        </div>
+                    );
+                case 'mex-group': 
+                    return (
+                        <div key={block.id} className="ml-0 md:ml-12 my-10 group">
+                            <div className="relative">
+                                <div className="absolute -top-3 left-4 bg-brand text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest font-condensed rounded-sm shadow-md z-20 flex items-center gap-2 transform group-hover:-translate-y-0.5 transition-transform">
+                                    <Code size={10} className="text-brand-accent" />
+                                    <span>{block.items.length > 1 ? 'Exemplos' : 'Exemplo'}</span>
+                                </div>
+                                <div className="bg-[#fcfcfc] dark:bg-[#1a211d] border border-slate-200 dark:border-white/5 border-l-4 border-l-brand rounded-sm shadow-sm relative overflow-hidden group-hover:shadow-md transition-shadow">
+                                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#2e5c18 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                                    <div className="p-6 pt-8 flex flex-col gap-4 relative z-10">
+                                        {block.items.map((item, idx) => (
+                                            <div key={item.id} className={`${idx > 0 ? 'pt-4 border-t border-dashed border-slate-200 dark:border-white/10' : ''} flex gap-4`}>
+                                                {block.items.length > 1 && (
+                                                    <span className="text-[10px] font-bold text-brand/50 mt-1 select-none font-mono">{(idx + 1).toString().padStart(2, '0')}</span>
+                                                )}
+                                                <div className="text-sm md:text-base text-slate-700 dark:text-slate-300 font-medium leading-relaxed font-sans italic opacity-90">
+                                                    <RichText text={item.content} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                case 'mlist': 
+                    return (
+                        <div key={block.id} className="ml-4 md:ml-16 mb-2 flex items-start gap-3 group">
+                            <div className="mt-1 shrink-0 text-brand/40 group-hover:text-brand transition-colors">
+                                <CheckCircle2 size={16} />
+                            </div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors text-justify">
+                                <RichText text={block.content} />
+                            </p>
+                        </div>
+                    );
+                case 'mpoin': 
+                    return (
+                        <div key={block.id} className="ml-4 md:ml-16 mb-2 flex items-start gap-3 group">
+                            <div className="mt-2 shrink-0 w-1.5 h-1.5 bg-slate-400 dark:bg-slate-500 rounded-full group-hover:bg-brand group-hover:scale-125 transition-all"></div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium text-justify">
+                                <RichText text={block.content} />
+                            </p>
+                        </div>
+                    );
+                case 'mpoin2': 
+                    return (
+                        <div key={block.id} className="ml-4 md:ml-16 mb-2 flex items-start gap-3 group">
+                            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium text-justify">
+                                <RichText text={block.content} />
+                            </p>
+                        </div>
+                    );
+                case 'mbr': 
+                    return <div key={block.id} className="h-6 w-full"></div>;
+                case 'title': 
+                case 'line': 
+                    return <CopyableText key={block.id} block={block} status={status} onInteract={handleInteract} />;
+                case 'p': 
+                    return <CopyableText key={block.id} block={block} status={status} onInteract={handleInteract} />;
+                case 'qa-group': 
+                     const qaStatus = { isClicked: clickedIds.has(block.question.id), isSkipped: skippedIds.has(block.question.id) };
+                     return <CopyableText key={block.id} block={block.question} status={qaStatus} onInteract={handleInteract} attachedAnswer={block.answer} />;
+                case 'mp': return <PrivateMessage key={block.id} block={block} status={status} onInteract={handleInteract} />; 
+                case 'att': return (
+                    <div className="flex items-center gap-3 py-2 my-2 px-3 bg-emerald-50 dark:bg-emerald-900/10 border-l-2 border-emerald-500 rounded-r-sm">
+                        <img src="https://i.imgur.com/Nzo9Lg1.png" className="w-5 h-5 flex-shrink-0 object-contain opacity-80" />
+                        <span className="text-xs text-emerald-900 dark:text-emerald-200 font-bold leading-snug"><RichText text={block.content} /></span>
+                    </div>
+                ); 
+                case 'rep': return (
+                    <div className="flex flex-col justify-center py-2 my-2 px-4 bg-slate-50/50 dark:bg-white/[0.02] border-l-2 border-slate-300 dark:border-white/10 rounded-r-sm hover:border-brand/50 transition-colors">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-condensed leading-none mb-1">Resposta</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-snug"><RichText text={block.content} /></span>
+                    </div>
+                ); 
+                case 's1': 
+                case 's3': return <Spoiler key={block.id} block={block} childrenNodes={block.children?.map(child => renderBlock(child))} />; 
+                default: return null; 
+            } 
+        };
+        return <div className="w-full">{processedBlocks.map(block => renderBlock(block))}</div>;
+      };
+
+      const ClassFeedbackForm = ({ professor, initialClassId, initialStartTime, initialStudent, isEvaluation, initialQuestions }) => {
+        const [selectedType, setSelectedType] = useState(isEvaluation ? EVALUATION_MODALITIES[0] : CLASS_TYPES_FEEDBACK[0]); 
+        const [isAdminActivity, setIsAdminActivity] = useState(false); 
+        const [students, setStudents] = useState(''); 
+        const [verdicts, setVerdicts] = useState({}); 
+        const [individualScores, setIndividualScores] = useState({});
+        const [individualComments, setIndividualComments] = useState({});
+        const [evalQuestions, setEvalQuestions] = useState({});
+        const [evalMpStatus, setEvalMpStatus] = useState({});
+        const [proofPrint, setProofPrint] = useState('');
+        const [copied, setCopied] = useState(false); 
+        const [startTime, setStartTime] = useState(new Date());
+
+        const studentList = useMemo(() => {
+            if (!students.trim()) return [];
+            return students.split('/').map(s => s.trim()).filter(s => s.length > 0);
+        }, [students]);
+
+        useEffect(() => { 
+            if (isEvaluation) {
+                if(initialClassId) {
+                     const type = EVALUATION_MODALITIES.find(t => t.id === initialClassId) || EVALUATION_MODALITIES[0];
+                     setSelectedType(type);
+                } else {
+                    setSelectedType(EVALUATION_MODALITIES[0]);
+                }
+            } else if (initialClassId) { 
+                const type = CLASS_TYPES_FEEDBACK.find(t => t.id === initialClassId) || CLASS_TYPES_FEEDBACK[0]; 
+                setSelectedType(type); 
+                if (initialClassId === 'admin_activity') { 
+                    const adminType = CLASS_TYPES_FEEDBACK.find(t => t.id === 'admin'); 
+                    if (adminType) setSelectedType(adminType); 
+                    setIsAdminActivity(true); 
+                } 
+            } 
+            if (initialStartTime) setStartTime(initialStartTime); 
+            if (initialStudent) setStudents(initialStudent); 
+        }, [initialClassId, initialStartTime, initialStudent, isEvaluation]);
+
+        useEffect(() => {
+            setVerdicts(prev => {
+                const next = { ...prev };
+                studentList.forEach(s => { if (!next[s]) next[s] = 'Aprovado'; });
+                return next;
+            });
+            setIndividualScores(prev => {
+                const next = { ...prev };
+                studentList.forEach(s => { 
+                    if (next[s] === undefined) next[s] = isAdminActivity ? 'Sim' : isEvaluation ? '10' : ''; 
+                });
+                return next;
+            });
+             setIndividualComments(prev => {
+                const next = { ...prev };
+                studentList.forEach(s => { if (next[s] === undefined) next[s] = ''; });
+                return next;
+            });
+            if (isEvaluation) {
+                setEvalQuestions(prev => {
+                    const next = { ...prev };
+                    studentList.forEach(s => { 
+                        if (!next[s]) next[s] = initialQuestions || ''; 
+                    });
+                    return next;
+                });
+                setEvalMpStatus(prev => {
+                    const next = { ...prev };
+                    studentList.forEach(s => { if (!next[s]) next[s] = 'Sim'; });
+                    return next;
+                });
+            }
+        }, [studentList, isAdminActivity, isEvaluation, initialQuestions]);
+
+        const formatReport = () => { 
+            let report = "";
+            const now = new Date();
+
+            if (isEvaluation) {
+            } else {
+                const typeName = isAdminActivity ? `${selectedType.name} (Atividade)` : selectedType.name; 
+                report = `RELATÓRIO DE AULA - ${typeName}\n----------------------------------------\nProfessor: ${professor.nickname}\nInício: ${startTime.toLocaleString('pt-BR')}\nFim: ${now.toLocaleString('pt-BR')}\n\n`;
+
+                if (studentList.length === 0) {
+                    report += "Nenhum aluno registrado.\n";
+                } else {
+                    studentList.forEach(student => {
+                        const v = (verdicts[student] || 'Aprovado').toUpperCase();
+                        const s = individualScores[student] || (isAdminActivity ? 'Sim' : '0');
+                        const c = individualComments[student] || 'Sem observações.';
+                        
+                        report += `ALUNO: ${student}\n`;
+                        report += `VEREDITO: ${v}\n`;
+                        
+                        if (isAdminActivity) {
+                            report += `ATIVIDADE ENVIADA: ${s.toUpperCase()}\n`;
+                        } else {
+                            report += `PONTUAÇÃO: ${s}/${selectedType.maxScore}\n`;
+                        }
+                        
+                        report += `OBSERVAÇÕES: ${c}\n\n`;
+                    });
+                }
+            }
+            
+            report += `----------------------------------------`;
+            return report.trim(); 
+        };
+        
+        const handleCopyReport = () => { navigator.clipboard.writeText(formatReport()); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+        const formatDateTimeForInput = (date) => { const d = new Date(date); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+        
+        const updateStudentData = (student, field, value) => {
+             if (field === 'verdict') setVerdicts(prev => ({...prev, [student]: value}));
+             if (field === 'score') {
+                 if (isEvaluation) {
+                     if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= 10)) {
+                         setIndividualScores(prev => ({...prev, [student]: value}));
+                     }
+                 } else if (!isAdminActivity) {
+                      if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= selectedType.maxScore)) {
+                          setIndividualScores(prev => ({...prev, [student]: value}));
+                      }
+                 } else {
+                     setIndividualScores(prev => ({...prev, [student]: value}));
+                 }
+             }
+             if (field === 'comment') setIndividualComments(prev => ({...prev, [student]: value}));
+             if (field === 'questions') setEvalQuestions(prev => ({...prev, [student]: value}));
+             if (field === 'mpStatus') setEvalMpStatus(prev => ({...prev, [student]: value}));
+        };
+
+        return (
+          <div className="animate-fade-in max-w-5xl mx-auto pb-20">
+            <div className="flex flex-col gap-3 border-b-2 border-slate-200 dark:border-white/5 pb-6 mb-10">
+                <h2 className="text-4xl font-condensed font-bold text-slate-900 dark:text-white uppercase italic tracking-tight">
+                    {isEvaluation ? 'Relatório de Avaliação' : 'Formulário de Postagem'}
+                </h2>
+                <p className="text-slate-500 text-base font-medium">Preenchimento obrigatório para homologação.</p>
+            </div>
+
+            <div className="flex flex-col gap-10">
+                <div className="bg-white dark:bg-[#121813] border border-slate-200 dark:border-white/5 rounded-lg p-8 shadow-sm">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-brand mb-6 flex items-center gap-2">
+                        <LayoutDashboard size={16} /> Dados da {isEvaluation ? 'Avaliação' : 'Instrução'}
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Modalidade</label>
+                            <div className="relative">
+                                <select value={selectedType.id} onChange={(e) => { 
+                                    const source = isEvaluation ? EVALUATION_MODALITIES : CLASS_TYPES_FEEDBACK;
+                                    const newType = source.find(t => t.id === e.target.value); 
+                                    if (newType) { 
+                                        setSelectedType(newType); 
+                                        setIndividualScores({}); 
+                                        if (!isEvaluation && newType.id !== 'admin') setIsAdminActivity(false); 
+                                    } 
+                                }} className="w-full h-14 pl-4 pr-10 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-md text-sm font-bold text-slate-700 dark:text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all appearance-none uppercase cursor-pointer">
+                                    {(isEvaluation ? EVALUATION_MODALITIES : CLASS_TYPES_FEEDBACK).map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                                </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Horário de Início</label>
+                            <input type="datetime-local" value={formatDateTimeForInput(startTime)} onChange={(e) => setStartTime(new Date(e.target.value))} className="w-full h-14 px-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-md text-sm font-bold text-slate-700 dark:text-white focus:border-brand outline-none transition-all uppercase cursor-pointer" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Lista de Cadetes (Separados por barra /)</label>
+                        <div className="relative">
+                            <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <input type="text" value={students} onChange={(e) => setStudents(e.target.value)} className="w-full h-14 pl-12 pr-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-md text-sm font-bold text-slate-700 dark:text-white focus:border-brand outline-none transition-all uppercase placeholder-slate-400" placeholder="Ex: Nick1 / Nick2 / Nick3" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-6 pb-32">
+                    {studentList.length > 0 && (
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-condensed font-bold uppercase text-slate-800 dark:text-white">
+                                Avaliação Individual <span className="text-brand ml-2">({studentList.length})</span>
+                            </h3>
+                            <div className="h-px bg-slate-200 dark:bg-white/10 flex-1 ml-6"></div>
+                        </div>
+                    )}
+
+                    {studentList.length === 0 ? (
+                        <div className="py-20 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-lg flex flex-col items-center justify-center text-center">
+                            <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4 text-slate-300">
+                                <Users size={32} />
+                            </div>
+                            <h4 className="text-lg font-bold text-slate-500 uppercase tracking-wide">Lista de Alunos Vazia</h4>
+                            <p className="text-slate-400 text-sm mt-1">Adicione os nicknames no painel acima para iniciar a avaliação.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {studentList.map((student, idx) => {
+                                const isApproved = verdicts[student] === 'Aprovado';
+                                const isReproved = verdicts[student] === 'Reprovado';
+                                return (
+                                    <div key={idx} className="bg-white dark:bg-[#151b17] rounded-lg shadow-sm border border-slate-200 dark:border-white/5 overflow-hidden group hover:shadow-md transition-all">
+                                        <div className="p-6 flex items-center gap-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
+                                            <div className="w-12 h-12 bg-white dark:bg-black/20 rounded-md border border-slate-200 dark:border-white/10 overflow-hidden shrink-0 shadow-sm relative flex items-center justify-center">
+                                                <img src={`https://www.habbo.com.br/habbo-imaging/avatarimage?user=${student}&direction=3&head_direction=3&gesture=sml&size=m&headonly=1`} className="scale-110 object-center" onError={(e) => e.target.style.display='none'} />
+                                                <div className={`absolute bottom-0 inset-x-0 h-1 transition-colors ${isApproved ? 'bg-green-500' : isReproved ? 'bg-red-500' : 'bg-slate-300'}`}></div>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Cadete</p>
+                                                <h4 className="text-xl font-condensed font-bold uppercase text-slate-800 dark:text-white truncate">{student}</h4>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <div className="flex bg-slate-100 dark:bg-black/40 rounded-md p-1 gap-1">
+                                                    <button onClick={() => updateStudentData(student, 'verdict', 'Aprovado')} className={`p-2 rounded-sm transition-all ${isApproved ? 'bg-white dark:bg-white/10 shadow text-green-600' : 'text-slate-400 hover:text-green-600'}`} title="Aprovar"><Check size={16} /></button>
+                                                    <button onClick={() => updateStudentData(student, 'verdict', 'Reprovado')} className={`p-2 rounded-sm transition-all ${isReproved ? 'bg-white dark:bg-white/10 shadow text-red-600' : 'text-slate-400 hover:text-red-600'}`} title="Reprovar"><X size={16} /></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="p-6 space-y-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-1/3">
+                                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">{isAdminActivity ? 'Entrega' : 'Pontuação'}</label>
+                                                    {isAdminActivity ? (
+                                                        <select value={individualScores[student] || 'Sim'} onChange={(e) => updateStudentData(student, 'score', e.target.value)} className="w-full h-10 px-3 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-md text-xs font-bold uppercase outline-none focus:border-brand cursor-pointer">
+                                                            <option value="Sim">OK</option>
+                                                            <option value="Não">Pend.</option>
+                                                        </select>
+                                                    ) : (
+                                                        <div className="relative">
+                                                            <input type="number" value={individualScores[student] || ''} onChange={(e) => updateStudentData(student, 'score', e.target.value)} min="0" max={selectedType.maxScore} className="w-full h-10 px-3 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-md text-xs font-bold text-center outline-none focus:border-brand placeholder-slate-400" placeholder="0" />
+                                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">/{selectedType.maxScore}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="w-2/3">
+                                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">Resultado Final</label>
+                                                    <div className={`h-10 px-4 flex items-center justify-center rounded-md font-bold uppercase text-[10px] tracking-wide border transition-colors ${isApproved ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' : isReproved ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500'}`}>
+                                                            {isApproved ? 'Aprovado no Módulo' : 'Reprovado no Módulo'}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">Observações</label>
+                                                <textarea value={individualComments[student] || ''} onChange={(e) => updateStudentData(student, 'comment', e.target.value)} rows={3} className="w-full p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-md text-xs text-slate-700 dark:text-white outline-none focus:border-brand resize-none placeholder-slate-400/50 leading-relaxed" placeholder="Digite observações relevantes..." />
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-[#0c120e]/90 backdrop-blur-md border-t border-brand/20 z-40 flex justify-end shadow-2xl animate-fade-in">
+                    <div className="max-w-7xl w-full mx-auto flex justify-end">
+                        <button onClick={handleCopyReport} className="h-14 px-8 bg-brand hover:bg-brand-hover text-white font-condensed font-bold uppercase tracking-widest text-sm rounded-sm shadow-lg hover:shadow-brand/30 hover:-translate-y-1 transition-all flex items-center gap-3 active:scale-95">
+                            {copied ? <Check size={20} /> : <Copy size={20} />}
+                            <span>{copied ? 'Relatório Copiado' : 'Copiar Relatório Final'}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+          </div>
+        );
+      };
+
+      const ClassHistoryList = ({ currentUser }) => {
+        const [history, setHistory] = useState([]); 
+        const [loading, setLoading] = useState(true); 
+        const [searchTerm, setSearchTerm] = useState(''); 
+        const [selectedType, setSelectedType] = useState('all'); 
+        const [sortOrder, setSortOrder] = useState('newest');
+
+        useEffect(() => { 
+            const loadHistory = async () => { 
+                try { 
+                    const data = await fetchClassHistory(); 
+                    const sortedData = data.sort((a, b) => { 
+                        const dateA = parseDateHelper(a.endTime)?.getTime() || 0; 
+                        const dateB = parseDateHelper(b.endTime)?.getTime() || 0; 
+                        return dateB - dateA; 
+                    }); 
+                    setHistory(sortedData); 
+                } catch (error) { 
+                    console.error("Failed to load history", error); 
+                } finally { 
+                    setLoading(false); 
+                } 
+            }; 
+            loadHistory(); 
+        }, []);
+
+        const classTypes = useMemo(() => Array.from(new Set(history.map(item => item.className))).sort(), [history]);
+
+        const filteredHistory = useMemo(() => { 
+            return history.filter(item => { 
+                const searchLower = searchTerm.toLowerCase(); 
+                return (item.professor.toLowerCase().includes(searchLower) || item.students.toLowerCase().includes(searchLower) || item.className.toLowerCase().includes(searchLower)) && (selectedType === 'all' || item.className === selectedType); 
+            }).sort((a, b) => { 
+                const dateA = parseDateHelper(a.endTime)?.getTime() || 0; 
+                const dateB = parseDateHelper(b.endTime)?.getTime() || 0; 
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB; 
+            }); 
+        }, [history, searchTerm, selectedType, sortOrder]);
+
+        if (loading) return (
+            <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="animate-spin text-brand mb-4" size={32} />
+                <p className="text-slate-400 font-condensed font-bold uppercase tracking-widest text-sm">Carregando registros...</p>
+            </div>
+        );
+
+        return (
+          <div className="space-y-8 animate-fade-in">
+            <div className="flex flex-col gap-2 border-b-2 border-slate-100 pb-4">
+                <h2 className="text-2xl font-condensed font-bold text-slate-900 dark:text-white uppercase italic">Relatório de Aulas</h2>
+                <p className="text-slate-500 text-sm font-medium">Histórico completo de cursos.</p>
+            </div>
+            
+            <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input type="text" placeholder="Buscar registro..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-dark-element border border-slate-200 dark:border-white/5 rounded-sm focus:outline-none focus:border-brand transition-all font-medium text-slate-700 dark:text-white placeholder-slate-400 text-sm" />
+                </div>
+                <div className="flex gap-4">
+                    <div className="relative min-w-[200px] flex-1 md:flex-none">
+                        <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-dark-element border border-slate-200 dark:border-white/5 rounded-sm focus:outline-none focus:border-brand transition-all font-medium text-slate-700 dark:text-white appearance-none cursor-pointer text-sm">
+                            <option value="all">Todas as Aulas</option>
+                            {classTypes.map((type, idx) => (<option key={idx} value={type}>{type}</option>))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                    </div>
+                    <div className="relative min-w-[180px] flex-1 md:flex-none">
+                        <ArrowUpDown className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-dark-element border border-slate-200 dark:border-white/5 rounded-sm focus:outline-none focus:border-brand transition-all font-medium text-slate-700 dark:text-white appearance-none cursor-pointer text-sm">
+                            <option value="newest">Mais Recentes</option>
+                            <option value="oldest">Mais Antigas</option>
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden min-h-[400px]">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 dark:bg-dark-element text-xs uppercase tracking-widest text-brand font-condensed font-bold border-b border-brand/20">
+                                <th className="px-6 py-4 whitespace-nowrap">Data</th>
+                                <th className="px-6 py-4">Módulo</th>
+                                <th className="px-6 py-4">Instrutor</th>
+                                <th className="px-6 py-4">Aluno(s)</th>
+                                <th className="px-6 py-4 text-center">Status</th>
+                                <th className="px-6 py-4 text-center">Nota</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-sm font-medium">
+                            {filteredHistory.length > 0 ? (
+                                filteredHistory.map((entry, index) => { 
+                                    const isApproved = entry.verdict.toLowerCase().includes('aprovado'); 
+                                    const hasAdminActivity = entry.adminActivity.toLowerCase().includes('sim') || entry.adminActivity.toLowerCase().includes('entregue'); 
+                                    return (
+                                        <tr key={index} className="group hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors border-b border-slate-100 dark:border-white/5 last:border-0">
+                                            <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-mono text-xs">
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-2"><CalendarDays size={12} className="text-brand" />{entry.endTime.split(' ')[0]}</div>
+                                                    <div className="flex items-center gap-2 mt-1 opacity-70"><Clock size={12} />{entry.endTime.split(' ')[1]}</div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-800 dark:text-slate-200">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold font-condensed uppercase tracking-wide text-xs">{entry.className}</span>
+                                                    {hasAdminActivity && (<span className="text-[10px] text-brand flex items-center gap-1 mt-0.5"><FileCheck size={10} /> Atividade</span>)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300 font-condensed uppercase text-xs font-bold">{entry.professor}</td>
+                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-400 max-w-[200px] truncate" title={entry.students}>{entry.students}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center">
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 border text-[10px] font-bold uppercase tracking-widest ${isApproved ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                                                        {isApproved ? <CheckCircle size={10} /> : <XCircle size={10} />}{entry.verdict}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center font-bold font-mono text-slate-700 dark:text-white">{entry.score}</td>
+                                        </tr>
+                                    ); 
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-20 text-center text-slate-400 uppercase font-condensed tracking-widest">Nenhum registro encontrado.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+          </div>
+        );
+      };
+
+      const CorrectionTool = ({ currentUser, onNavigateToReport }) => {
+        const [studentNick, setStudentNick] = useState(''); const [bbcodeInput, setBbcodeInput] = useState(''); const [result, setResult] = useState({ approved: false, missing: [], checked: false });
+        const REQUIRED_TAGS = ['[/b]', '[/i]', '[/u]', '[/strike]', '[/code]', '[/spoiler]', '[/table]', '[/img]', '[/font]', '[url=', '[size=', '[color='];
+        const handleCheck = () => { if (!bbcodeInput.trim()) return; const missingTags = REQUIRED_TAGS.filter(tag => !bbcodeInput.includes(tag)); setResult({ approved: missingTags.length === 0, missing: missingTags, checked: true }); };
+        const handleClear = () => { setStudentNick(''); setBbcodeInput(''); setResult({ approved: false, missing: [], checked: false }); };
+        const handleForumPost = () => alert("Redirecionando para o tópico de postagem no fórum (Simulação).");
+        const handleMpSend = () => alert(`Redirecionando para enviar MP para ${studentNick || 'o aluno'}.`);
+        const handlePaste = async () => { 
+            try { 
+                const text = await navigator.clipboard.readText(); 
+                setBbcodeInput(text); 
+                if(result.checked) setResult({...result, checked: false}); 
+            } catch (err) { 
+                console.error(err);
+                alert("Acesso à área de transferência bloqueado. Cole manualmente (Ctrl+V).");
+            } 
+        };
+
+        return (
+          <div className="animate-fade-in max-w-5xl mx-auto min-h-[600px] flex flex-col gap-6">
+            <div className="flex flex-col gap-2 border-b border-slate-200 dark:border-white/10 pb-4">
+                <h2 className="text-3xl font-condensed font-bold text-slate-900 dark:text-white uppercase italic">Ferramenta de Correção</h2>
+                <p className="text-slate-500 text-sm font-medium">Sistema de verificação de sintaxe BBCode para atividades.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 flex flex-col gap-4">
+                    <div className="relative bg-[#1e1e1e] border border-slate-700 rounded-md flex flex-col h-[600px] overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2 bg-[#252526] border-b border-[#333333]">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 font-mono flex items-center gap-2">
+                                    <Terminal size={12} className="text-brand-accent" /> BBCode Editor
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={handlePaste} className="px-2 py-1 hover:bg-[#333333] rounded text-[10px] font-bold uppercase tracking-wide text-slate-400 hover:text-white transition-colors flex items-center gap-1" title="Colar da área de transferência">
+                                    <ClipboardList size={12} /> Colar
+                                </button>
+                                <button onClick={handleClear} className="px-2 py-1 hover:bg-[#333333] rounded text-[10px] font-bold uppercase tracking-wide text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1" title="Limpar editor">
+                                    <Eraser size={12} /> Limpar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="flex-1 flex relative">
+                            <div className="w-10 bg-[#1e1e1e] border-r border-[#333333] flex flex-col items-end py-4 pr-2 text-[#858585] font-mono text-xs select-none">
+                                {Array.from({length: 20}).map((_, i) => <div key={i} className="leading-relaxed">{i + 1}</div>)}
+                            </div>
+                            <textarea 
+                                value={bbcodeInput} 
+                                onChange={(e) => { setBbcodeInput(e.target.value); if (result.checked) setResult({ ...result, checked: false }); }} 
+                                placeholder="// Cole o código BBCode da atividade aqui..." 
+                                className="flex-1 w-full bg-[#1e1e1e] text-[#d4d4d4] font-mono text-xs p-4 resize-none focus:outline-none leading-relaxed custom-scrollbar selection:bg-[#264f78]"
+                                spellCheck="false"
+                            />
+                        </div>
+
+                        <div className="px-4 py-1.5 bg-[#007acc] text-white text-[10px] font-mono flex items-center justify-between">
+                            <div className="flex gap-4">
+                                <span>UTF-8</span>
+                                <span>BBCODE</span>
+                            </div>
+                            <span>Ln {bbcodeInput.split('\n').length}, Col {bbcodeInput.length}</span>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-white dark:bg-[#151b17] border border-slate-200 dark:border-white/10 rounded-sm shadow-sm flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="relative w-full sm:w-auto sm:flex-1">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Users size={14} className="text-slate-400" />
+                            </div>
+                            <input 
+                                type="text" 
+                                value={studentNick} 
+                                onChange={(e) => setStudentNick(e.target.value)} 
+                                placeholder="NICKNAME DO ALUNO" 
+                                className="w-full pl-9 pr-4 py-2.5 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all text-xs font-bold uppercase tracking-wide text-slate-700 dark:text-white"
+                            />
+                        </div>
+                        <button 
+                            onClick={handleCheck} 
+                            disabled={!bbcodeInput.trim()} 
+                            className="w-full sm:w-auto px-8 py-2.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold uppercase tracking-widest rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-brand/20"
+                        >
+                            <Scan size={16} /> <span className="mt-0.5">Executar Análise</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                    {result.checked ? (
+                        <div className={`h-full bg-white dark:bg-[#151b17] border-2 ${result.approved ? 'border-green-500' : 'border-red-500'} rounded-sm shadow-2xl p-0 flex flex-col relative overflow-hidden animate-fade-in`}>
+                            <div className={`${result.approved ? 'bg-green-500' : 'bg-red-500'} p-6 text-center text-white`}>
+                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm shadow-inner">
+                                    {result.approved ? <CheckCircle2 size={32} /> : <XSquare size={32} />}
+                                </div>
+                                <h3 className="text-2xl font-condensed font-bold uppercase italic tracking-wider leading-none">
+                                    {result.approved ? 'APROVADO' : 'REPROVADO'}
+                                </h3>
+                                <p className="text-[10px] uppercase tracking-widest opacity-80 font-mono mt-1">STATUS DA VERIFICAÇÃO</p>
+                            </div>
+
+                            <div className="p-6 flex-1 flex flex-col">
+                                <div className="flex-1">
+                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-4 text-center border-b border-slate-100 dark:border-white/5 pb-4">
+                                        {result.approved 
+                                            ? "O código submetido atende integralmente aos padrões de formatação exigidos."
+                                            : "Foram identificadas inconsistências estruturais no código submetido."}
+                                    </p>
+
+                                    {!result.approved && result.missing.length > 0 && (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-red-500">
+                                                <AlertTriangle size={14} />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Violações Detectadas</span>
+                                            </div>
+                                            <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-500/20 rounded-sm p-3">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {result.missing.map((tag, idx) => (
+                                                        <span key={idx} className="px-2 py-1 bg-white dark:bg-black/40 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 rounded-sm text-[10px] font-mono font-bold flex items-center gap-1">
+                                                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {result.approved && (
+                                    <div className="mt-6 grid grid-cols-1 gap-3">
+                                        <button onClick={handleForumPost} className="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md group">
+                                            <Globe size={14} className="group-hover:scale-110 transition-transform" /> Acessar Fórum
+                                        </button>
+                                        <button onClick={() => onNavigateToReport(studentNick)} className="py-3 bg-slate-800 dark:bg-white text-white dark:text-black hover:bg-slate-900 dark:hover:bg-slate-200 font-bold rounded-sm text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md group">
+                                            <FileText size={14} className="group-hover:scale-110 transition-transform" /> Gerar Relatório
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                {!result.approved && (
+                                    <div className="mt-6">
+                                        <button onClick={() => handleMpSend()} className="w-full py-3 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30 font-bold rounded-sm text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
+                                            <SendHorizontal size={14} /> Notificar Aluno
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="h-full bg-slate-50 dark:bg-dark-surface border border-slate-200 dark:border-white/5 rounded-sm p-8 flex flex-col items-center justify-center text-center opacity-60 border-dashed">
+                            <div className="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-6 text-slate-400 animate-pulse">
+                                <Code size={40} />
+                            </div>
+                            <h4 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-2">Aguardando Input</h4>
+                            <p className="text-xs text-slate-400 max-w-[200px] leading-relaxed">Cole o código BBCode ao lado para iniciar a verificação automática.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+          </div>
+        );
+      };
+
+      const MENU_ITEMS = [
+        { id: 'classes', label: 'Aulas e Scripts', icon: CustomCourseIcon }, 
+        { id: 'reports', label: 'Formulário de Postagem', icon: FileText },
+        { id: 'history', label: 'Relatórios de Aulas', icon: ClipboardList },
+        { id: 'correction', label: 'Ferramenta de Correção', icon: PenTool },
+        { id: 'manual_prof', label: 'Manual do Professor', icon: CustomProfessorIcon }, 
+      ];
+
+      const MobileMenu = ({ menuItems, currentUser, currentView, navigateTo, onClose }) => {
+          return (
+            <div className="fixed inset-0 z-[1000] lg:hidden">
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
+                <div className="absolute left-0 top-0 bottom-0 w-80 bg-white dark:bg-dark-surface flex flex-col animate-fade-in shadow-2xl border-r-4 border-brand">
+                    <div className="h-24 flex items-center justify-between px-6 shrink-0 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-dark-element">
+                        <div className="flex items-center gap-3">
+                            <img src={LOGO_URL} alt="Logo" className="h-10 w-auto object-contain" />
+                            <div className="flex flex-col leading-none">
+                                <span className="font-condensed font-bold uppercase text-brand text-lg tracking-tighter">Menu</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Navegação</span>
+                            </div>
+                        </div>
+                        <button onClick={onClose} className="p-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-white/10 rounded-sm">
+                            <X size={20} className="text-slate-500" />
+                        </button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+                        <button 
+                            onClick={() => { navigateTo('home'); onClose(); }}
+                            className={`flex items-center w-full px-5 py-4 rounded-sm transition-all font-condensed font-bold uppercase tracking-wide text-sm ${currentView === 'home' ? 'bg-brand text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-hover border border-transparent'}`}
+                        >
+                            <LayoutDashboard size={18} className={currentView === 'home' ? 'text-white' : 'text-slate-400'} /> 
+                            <span className="ml-4">Início</span>
+                        </button>
+
+                        <div className="h-px bg-slate-100 dark:bg-white/5 my-4 mx-2"></div>
+
+                        {menuItems.map(item => (
+                            <button 
+                                key={item.id} 
+                                onClick={() => { navigateTo(item.id); onClose(); }} 
+                                className={`flex items-center w-full px-4 py-3 rounded-sm text-sm font-condensed font-bold uppercase tracking-wide transition-all ${currentView === item.id ? 'bg-white dark:bg-dark-surface text-brand shadow-sm border-l-4 border-brand' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-dark-surface'}`}
+                            >
+                                <span className="ml-3">{item.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-dark-element">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-700 rounded-sm overflow-hidden flex items-center justify-center">
+                                <img src={`https://www.habbo.com.br/habbo-imaging/avatarimage?user=${currentUser?.nickname}&direction=3&head_direction=3&gesture=sml&size=m&headonly=1`} alt="Avatar" className="scale-110" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-condensed font-bold uppercase text-sm text-slate-900 dark:text-white leading-none">{currentUser?.nickname}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-brand mt-1">{currentUser?.role}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          );
+      };
+
+      const App = () => {
+        const [isLoggedIn, setIsLoggedIn] = useState(false);
+        const [currentUser, setCurrentUser] = useState(null);
+        const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+        const [nicknameInput, setNicknameInput] = useState('');
+        const [loginLoading, setLoginLoading] = useState(false);
+        const [loginError, setLoginError] = useState('');
+        const [currentView, setCurrentView] = useState('home');
+        const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+        const [selectedClass, setSelectedClass] = useState(null);
+        const [classContent, setClassContent] = useState([]);
+        const [contentLoading, setContentLoading] = useState(false);
+        const [classStartTime, setClassStartTime] = useState(null);
+        const [showWarning, setShowWarning] = useState(false);
+        const [reportData, setReportData] = useState(null);
+        const [manualContent, setManualContent] = useState([]);
+        const [rerollTrigger, setRerollTrigger] = useState(0);
+
+        useEffect(() => {
+          const root = document.documentElement;
+          if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
+          localStorage.setItem('theme', theme);
+        }, [theme]);
+
+        useEffect(() => {
+            let gid = null;
+            if (currentView === 'manual_prof') gid = MANUAL_PROF_GID;
+
+            if (gid) {
+                const load = async () => {
+                    setContentLoading(true);
+                    setManualContent([]); 
+                    try {
+                        const rows = await fetchClassContent(gid);
+                        setManualContent(parseRowsToBlocks(rows));
+                    } catch(e) { console.error(e); }
+                    finally { setContentLoading(false); }
+                };
+                load();
+            }
+        }, [currentView]);
+
+        const handleLogin = async (e) => {
+          e.preventDefault();
+          if (!nicknameInput.trim()) return;
+          setLoginLoading(true); setLoginError('');
+          try {
+            const user = await loginUser(nicknameInput);
+            if (user) { setCurrentUser(user); setIsLoggedIn(true); } else setLoginError('Nickname não encontrado.');
+          } catch (err) { setLoginError('Erro de conexão.'); } finally { setLoginLoading(false); }
+        };
+
+        const openClass = async (cls) => {
+          setSelectedClass(cls);
+          setCurrentView('classes');
+          setClassStartTime(new Date());
+          setContentLoading(true);
+          try {
+            const rows = await fetchClassContent(cls.gid);
+            setClassContent(parseRowsToBlocks(rows));
+          } catch (err) { alert('Erro ao carregar.'); } finally { setContentLoading(false); }
+        };
+
+        const handlePostReport = () => { if (selectedClass && classStartTime) { setReportData({ classId: selectedClass.id, startTime: classStartTime }); setCurrentView('reports'); setSelectedClass(null); } };
+        
+        const handleNavigateFromCorrection = (studentNick) => { setReportData({ classId: 'admin_activity', startTime: new Date(), studentNick: studentNick }); setCurrentView('reports'); };
+
+        const triggerWarning = useCallback(() => {
+          setShowWarning(true);
+          setTimeout(() => setShowWarning(false), 5000);
+        }, []);
+        
+        const Toast = ({ message, onClose }) => (
+            <div className="fixed top-24 right-4 z-[9999] bg-red-800 text-white px-6 py-4 rounded shadow-2xl animate-slide-in-right flex items-center gap-4 max-w-sm border-l-4 border-yellow-500">
+                <div className="bg-white/10 p-2 rounded-full shrink-0"><AlertTriangle size={20} className="text-yellow-500" /></div>
+                <div className="flex flex-col"><span className="text-xs font-bold uppercase text-yellow-500 tracking-wider">Atenção</span><p className="font-bold text-sm leading-snug">{message}</p></div>
+                <button onClick={onClose} className="p-1 hover:bg-white/10 rounded transition-colors ml-auto"><X size={16} /></button>
+            </div>
+        );
+
+        const Footer = () => (
+            <footer className="mt-auto bg-[#050806] border-t-2 border-brand/20 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(45deg, #2e5c18 25%, transparent 25%, transparent 50%, #2e5c18 50%, #2e5c18 75%, transparent 75%, transparent)', backgroundSize: '60px 60px' }}></div>
+              
+              <div className="max-w-[1400px] mx-auto px-6 py-10 md:py-12 relative z-10">
+                  <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="flex items-start gap-5 group">
+                            <div className="relative p-2 bg-white/5 rounded-sm border border-white/10 group-hover:border-brand/50 transition-colors">
+                                <img src={LOGO_URL} alt="CFO" className="h-10 w-auto grayscale group-hover:grayscale-0 transition-all duration-500" />
+                                <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-white/20"></div>
+                                <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-white/20"></div>
+                            </div>
+                            <div className="flex flex-col space-y-1">
+                                <span className="font-condensed font-bold text-white uppercase tracking-widest text-sm leading-none">Centro de Formação de Oficiais</span>
+                                <span className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-mono">Polícia Militar Revolução • Est. 2026</span>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-6">
+                            <span className="text-[10px] text-white/30 font-mono">© {new Date().getFullYear()} DIREITOS RESERVADOS</span>
+                            <span className="text-brand font-bold uppercase tracking-widest text-[10px] hidden md:inline">DESENVOLVIDO POR .BRENDON</span>
+                        </div>
+                  </div>
+              </div>
+            </footer>
+        );
+
+        const quickAccessConfig = useMemo(() => {
+             return {
+                card1: {
+                    id: 'classes',
+                    title: 'Aulas e Scripts',
+                    desc: 'Acesse os módulos de ensino e scripts atualizados. Nossa metodologia foca na formação de líderes preparados para o alto comando.',
+                    iconImg: 'https://i.imgur.com/N03iLnL.png',
+                    iconLucide: null,
+                    color: 'bg-brand',
+                    bgHover: 'group-hover:text-brand',
+                    borderHover: 'hover:border-brand/60'
+                },
+                card2: {
+                    id: 'manual_prof',
+                    title: 'Manual do Professor',
+                    desc: 'Diretrizes operacionais, regras de conduta e normas de aplicação.',
+                    iconImg: 'https://i.imgur.com/85pC8ek.png',
+                    iconLucide: null,
+                    color: 'bg-slate-400',
+                    bgHover: 'group-hover:text-slate-700',
+                    borderHover: 'hover:border-slate-300'
+                }
+             };
+        }, []);
+
+        if (!isLoggedIn) {
+          return (
+            <div className="flex flex-col min-h-screen w-full bg-[#0f1a11] relative overflow-hidden selection:bg-brand selection:text-white">
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none opacity-20"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(46,92,24,0.15),transparent_70%)] pointer-events-none"></div>
+              
+              <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
+                  <main className="w-full max-w-md bg-[#121a14]/90 backdrop-blur-md border border-white/10 rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.5)] p-8 md:p-12 relative group overflow-hidden">
+                      <div className="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-brand/30 group-hover:border-brand/60 transition-colors rounded-tl-sm pointer-events-none"></div>
+                      <div className="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-brand/30 group-hover:border-brand/60 transition-colors rounded-br-sm pointer-events-none"></div>
+
+                      <div className="text-center mb-10 relative">
+                          <div className="w-24 h-24 bg-gradient-to-b from-white/5 to-transparent rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                              <img src={LOGO_URL} alt="CFO" className="h-14 w-auto drop-shadow-[0_0_15px_rgba(46,92,24,0.5)]" />
+                          </div>
+                          <h1 className="text-4xl font-condensed font-bold text-white uppercase italic tracking-tighter leading-none mb-2">Login Operacional</h1>
+                          <div className="h-0.5 w-12 bg-brand mx-auto mb-4"></div>
+                          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">Identificação Obrigatória</p>
+                      </div>
+
+                      <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+                          <div className="space-y-2">
+                              <label className="text-[10px] font-bold uppercase tracking-widest text-brand ml-1">Credencial de Acesso</label>
+                              <div className="relative group/input">
+                                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                      <Icon name="shield-check" className="h-5 w-5 text-slate-500 group-focus-within/input:text-brand transition-colors" />
+                                  </div>
+                                  <input 
+                                      type="text" 
+                                      value={nicknameInput} 
+                                      onChange={(e) => setNicknameInput(e.target.value)} 
+                                      className="block w-full pl-12 pr-4 py-4 bg-[#0a0f0b] border border-white/10 text-white placeholder-white/20 focus:ring-1 focus:ring-brand focus:border-brand block w-full text-sm font-bold uppercase tracking-wider transition-all shadow-inner rounded-sm" 
+                                      placeholder="Ex: Marechal.Br" 
+                                      autoFocus
+                                  />
+                                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 pointer-events-none"></div>
+                              </div>
+                          </div>
+
+                          {loginError && (
+                              <div className="p-4 bg-red-950/30 border-l-2 border-red-500 flex items-center gap-3 animate-fade-in backdrop-blur-sm">
+                                  <AlertCircle size={16} className="text-red-500 shrink-0" />
+                                  <span className="text-red-200 text-xs font-bold uppercase tracking-wide">{loginError}</span>
+                              </div>
+                          )}
+
+                          <button 
+                              type="submit" 
+                              disabled={loginLoading} 
+                              className="w-full bg-brand hover:bg-[#3d7025] text-white font-condensed font-bold text-lg py-4 transition-all uppercase tracking-widest flex justify-center shadow-[0_4px_0_rgb(20,40,10)] hover:shadow-[0_2px_0_rgb(20,40,10)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] rounded-sm relative overflow-hidden group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                              <span className="relative z-10 flex items-center gap-3">
+                                  {loginLoading ? (
+                                      <>
+                                        <Loader2 className="animate-spin" size={20} />
+                                        <span>Autenticando...</span>
+                                      </>
+                                  ) : (
+                                      <>
+                                        <span>Acessar Sistema</span>
+                                        <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform"/>
+                                      </>
+                                  )}
+                              </span>
+                          </button>
+                      </form>
+                      
+                      <div className="mt-8 text-center pt-6 border-t border-white/5">
+                          <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono flex items-center justify-center gap-2">
+                              <Lock size={10} /> Conexão Segura e Criptografada
+                          </p>
+                      </div>
+                  </main>
+                  
+                  <div className="mt-8 text-white/20 text-[10px] font-mono tracking-widest">
+                      ID DO TERMINAL: {Math.random().toString(36).substr(2, 9).toUpperCase()}
+                  </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex flex-col min-h-screen w-full font-sans text-slate-800 dark:text-slate-200">
+            {showWarning && <Toast message="Pulo de linhas detectado! Mantenha a ordem do script." onClose={() => setShowWarning(false)} />}
+            
+            <Navbar user={currentUser} onMenuClick={() => setMobileMenuOpen(true)} navigateTo={setCurrentView} currentView={currentView} menuItems={MENU_ITEMS} toggleTheme={() => setTheme(t => t === 'light' ? 'dark' : 'light')} theme={theme} />
+
+            {mobileMenuOpen && (
+              <MobileMenu 
+                menuItems={MENU_ITEMS} 
+                currentUser={currentUser} 
+                currentView={currentView}
+                navigateTo={setCurrentView}
+                onClose={() => setMobileMenuOpen(false)}
+              />
+            )}
+
+            <div className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8 relative z-10">
+                <main className="paper-container min-h-[800px] p-6 md:p-12 transition-colors duration-500 rounded-b-sm">
+                    
+                    {currentView === 'home' && (
+                      <div className="animate-fade-in space-y-12">
+                          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-slate-200 dark:border-white/5 pb-8">
+                            <div>
+                                <h2 className="text-4xl md:text-5xl font-condensed font-bold text-slate-900 dark:text-white uppercase italic tracking-tight">Bem-vindo, {currentUser.nickname}</h2>
+                            </div>
+                          </div>
+                          
+                          <Slideshow />
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            
+                            {/* Card 1 - Dynamic */}
+                            <div onClick={() => setCurrentView(quickAccessConfig.card1.id)} className="relative bg-white dark:bg-dark-surface p-8 border border-slate-200 dark:border-white/5 shadow-folder cursor-pointer group overflow-hidden transition-all duration-300 hover:-translate-y-1 rounded-sm">
+                                <div className={`absolute top-0 left-0 w-1 h-full ${quickAccessConfig.card1.color} group-hover:w-2 transition-all`}></div>
+                                <div className="mb-8 flex justify-between items-start">
+                                    <div className="p-3 bg-slate-100 dark:bg-dark-element rounded-sm group-hover:bg-slate-200 dark:group-hover:bg-white/10 transition-colors">
+                                        {quickAccessConfig.card1.iconImg ? 
+                                            <img src={quickAccessConfig.card1.iconImg} className="w-8 h-8 object-contain mb-0" alt={quickAccessConfig.card1.title} /> 
+                                            : 
+                                            React.createElement(quickAccessConfig.card1.iconLucide, { size: 32, className: "text-brand" })
+                                        }
+                                    </div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest text-slate-300 ${quickAccessConfig.card1.bgHover} transition-colors`}>Acesso Rápido</span>
+                                </div>
+                                <h3 className={`text-2xl font-condensed font-bold uppercase tracking-wide mb-2 ${quickAccessConfig.card1.bgHover} transition-colors`}>{quickAccessConfig.card1.title}</h3>
+                                <p className="text-sm font-medium opacity-60 leading-relaxed">{quickAccessConfig.card1.desc}</p>
+                            </div>
+
+                            {/* Card 2 - Dynamic */}
+                            <div onClick={() => setCurrentView(quickAccessConfig.card2.id)} className="relative bg-white dark:bg-dark-surface p-8 border border-slate-200 dark:border-white/5 shadow-folder cursor-pointer group overflow-hidden transition-all duration-300 hover:-translate-y-1 rounded-sm">
+                                <div className={`absolute top-0 left-0 w-1 h-full ${quickAccessConfig.card2.color} group-hover:w-2 transition-all`}></div>
+                                <div className="mb-8 flex justify-between items-start">
+                                    <div className="p-3 bg-slate-100 dark:bg-dark-element rounded-sm group-hover:bg-slate-800 transition-colors">
+                                         {quickAccessConfig.card2.iconImg ? 
+                                            <img src={quickAccessConfig.card2.iconImg} className="w-8 h-8 object-contain mb-0" alt={quickAccessConfig.card2.title} /> 
+                                            : 
+                                            React.createElement(quickAccessConfig.card2.iconLucide, { size: 32, className: "text-slate-500" })
+                                        }
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300 group-hover:text-slate-500 transition-colors">Documentação</span>
+                                </div>
+                                <h3 className="text-2xl font-condensed font-bold uppercase tracking-wide mb-2 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">{quickAccessConfig.card2.title}</h3>
+                                <p className="text-sm font-medium opacity-60 leading-relaxed">{quickAccessConfig.card2.desc}</p>
+                            </div>
+
+                            <NoticeBoard />
+                          </div>
+                      </div>
+                    )}
+
+                    {currentView === 'classes' && !selectedClass && (
+                      <div className="animate-fade-in space-y-10">
+                          <div className="border-b-2 border-slate-200 dark:border-white/5 pb-6 flex items-end justify-between">
+                              <div>
+                                  <h2 className="text-4xl font-condensed font-bold text-slate-900 dark:text-white uppercase tracking-tight italic">AULAS E SCRIPTS</h2>
+                                  <p className="text-slate-500 font-medium mt-2 text-sm">Selecione o curso que deseja abaixo.</p>
+                              </div>
+                              <div className="hidden md:block">
+                                  <span className="text-xs font-bold uppercase tracking-widest text-brand bg-brand/10 px-3 py-1 rounded-full">Módulo I</span>
+                              </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 gap-6">
+                            {CLASSES.map((cls, idx) => (
+                              <div key={cls.id} onClick={() => openClass(cls)} className="group cursor-pointer">
+                                  <div className="relative bg-white dark:bg-[#121813] border border-slate-200 dark:border-white/10 hover:border-brand/60 transition-all duration-300 rounded-sm overflow-hidden flex flex-col md:flex-row hover:shadow-lg">
+                                      
+                                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-200 dark:bg-white/10 group-hover:bg-brand transition-colors"></div>
+
+                                      <div className="p-6 md:w-32 bg-slate-50 dark:bg-[#0a0f0b] border-r border-slate-100 dark:border-white/5 flex flex-col justify-center items-center md:items-start shrink-0">
+                                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Curso</span>
+                                          <span className="text-3xl font-display text-slate-300 dark:text-white/20 group-hover:text-brand transition-colors">0{idx + 1}</span>
+                                      </div>
+
+                                      <div className="p-6 flex-1 flex flex-col justify-center relative z-10">
+                                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                                              <h4 className="text-xl font-condensed font-bold uppercase tracking-wide text-slate-800 dark:text-white group-hover:text-brand transition-colors flex items-center gap-3">
+                                                  <img src={cls.icon} alt="" className="w-8 h-8 object-contain drop-shadow-sm opacity-90 group-hover:opacity-100 transition-opacity" />
+                                                  {cls.name}
+                                              </h4>
+                                          </div>
+                                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 font-sans pl-3 border-l-2 border-slate-200 dark:border-white/10 group-hover:border-brand/30 transition-colors">
+                                              {cls.description}
+                                          </p>
+                                      </div>
+
+                                      <div className="p-6 md:w-48 bg-slate-50 dark:bg-[#0a0f0b]/50 flex items-center justify-end md:justify-center border-l border-slate-100 dark:border-white/5 group-hover:bg-brand group-hover:text-white transition-all duration-300">
+                                          <span className="font-condensed font-bold uppercase tracking-widest text-xs flex items-center gap-2">
+                                              Acessar <ArrowRight size={16} />
+                                          </span>
+                                      </div>
+                                  </div>
+                              </div>
+                            ))}
+                          </div>
+                      </div>
+                    )}
+
+                    {currentView === 'classes' && selectedClass && (
+                      <div className="animate-fade-in">
+                        <div className="sticky top-24 z-30 -mx-4 md:-mx-12 px-4 md:px-12 bg-slate-100/90 dark:bg-[#0c120e]/95 backdrop-blur-md border-y border-brand/30 mb-8 py-4 shadow-lg transition-all">
+                          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="flex items-center gap-5">
+                                  <button onClick={() => setSelectedClass(null)} className="group flex items-center justify-center w-12 h-12 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-sm hover:bg-brand hover:border-brand hover:text-white transition-all duration-200 shadow-sm">
+                                      <ArrowLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
+                                  </button>
+                                  <img src={selectedClass.icon} alt="" className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-md" />
+                                  <div className="flex flex-col">
+                                      <h2 className="text-xl md:text-3xl font-condensed font-bold text-slate-900 dark:text-white uppercase tracking-tight leading-none drop-shadow-sm">
+                                          {selectedClass.name}
+                                      </h2>
+                                  </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-4 w-full md:w-auto">
+                                  <div className="hidden xl:flex flex-col items-end border-r border-slate-300 dark:border-white/10 pr-6 mr-2">
+                                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Professor(a)</span>
+                                      <span className="font-condensed font-bold text-sm text-slate-700 dark:text-slate-300 uppercase">{currentUser?.nickname}</span>
+                                  </div>
+                                  <button onClick={handlePostReport} className="flex-1 md:flex-none h-12 px-8 bg-brand hover:bg-brand-hover text-white font-condensed font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-brand/25 hover:-translate-y-0.5 flex items-center justify-center gap-3 border border-white/10 rounded-sm group relative overflow-hidden">
+                                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite]"></div>
+                                      <FileSignature size={18} />
+                                      <span>Postar</span>
+                                  </button>
+                              </div>
+                          </div>
+                        </div>
+                        
+                        <div className="w-full mx-auto">
+                          {contentLoading ? (
+                              <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-element border border-slate-200 dark:border-slate-700 shadow-sm rounded-sm">
+                                  <Loader2 className="animate-spin text-brand mb-4" size={48} />
+                                  <span className="font-condensed font-bold uppercase tracking-widest text-slate-400 text-sm">Descriptografando Script...</span>
+                              </div>
+                          ) : (
+                              <div className="relative min-h-[800px]">
+                                  <div className="watermark"><img src={LOGO_URL} className="w-full h-auto grayscale opacity-10" /></div>
+                                  
+                                  <div className="relative z-10 space-y-2">
+                                      <ContentRenderer blocks={classContent} onSkipWarning={triggerWarning} />
+                                  </div>
+                              </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {currentView === 'reports' && (
+                        <ClassFeedbackForm 
+                            professor={currentUser} 
+                            initialClassId={reportData?.classId} 
+                            initialStartTime={reportData?.startTime} 
+                            initialStudent={reportData?.studentNick}
+                            isEvaluation={false}
+                            initialQuestions={null}
+                        />
+                    )}
+
+                    {currentView === 'history' && <ClassHistoryList currentUser={currentUser} />}
+
+                    {(currentView === 'correction') && (
+                        <CorrectionTool 
+                            currentUser={currentUser} 
+                            onNavigateToReport={handleNavigateFromCorrection}
+                        />
+                    )}
+                    
+                    {currentView === 'manual_prof' && (
+                        <div className="animate-fade-in max-w-4xl mx-auto">
+                            <div className="mb-10 border-b border-brand/20 pb-6">
+                                 <div className="flex items-center gap-4 mb-2">
+                                     <div className="p-3 bg-brand/10 rounded-sm text-brand">
+                                         <CustomProfessorIcon size={32} />
+                                     </div>
+                                     <div>
+                                         <h2 className="text-3xl font-condensed font-bold text-slate-900 dark:text-white uppercase italic tracking-tight">
+                                            Manual do Professor
+                                         </h2>
+                                         <p className="text-slate-500 font-medium text-sm">Normas, procedimentos e diretrizes oficiais.</p>
+                                     </div>
+                                 </div>
+                            </div>
+                            
+                            {contentLoading ? (
+                                <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-element border border-slate-200 dark:border-slate-700 shadow-sm rounded-sm">
+                                    <Loader2 className="animate-spin text-brand mb-4" size={48} />
+                                    <span className="font-condensed font-bold uppercase tracking-widest text-slate-400 text-sm">Carregando Manual...</span>
+                                </div>
+                            ) : (
+                                 <div className="bg-white dark:bg-dark-surface p-8 md:p-12 shadow-folder rounded-sm border border-slate-200 dark:border-white/5 relative">
+                                      <div className="watermark"><img src={LOGO_URL} className="w-full h-auto grayscale opacity-5" /></div>
+                                      <div className="relative z-10">
+                                         <ContentRenderer blocks={manualContent} onSkipWarning={() => {}} />
+                                      </div>
+                                 </div>
+                            )}
+                        </div>
+                    )}
+
+                </main>
+            </div>
+
+            <Footer />
+          </div>
+        );
+      };
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<App />);
